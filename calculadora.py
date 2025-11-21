@@ -138,4 +138,3 @@ with tab1:
 
 with tab2:
     st.dataframe(datos_grafico.style.format("₡ {:,.0f}"))
-EOF
