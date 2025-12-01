@@ -10,19 +10,46 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilos CSS ligeros
+# --- ESTILOS CSS PROFESIONALES (THEME OVERRIDE) ---
 st.markdown("""
 <style>
+    /* Fondo General con Degradado Profesional */
+    .stApp {
+        background: linear-gradient(180deg, #0e1117 0%, #161b24 100%);
+    }
+    
+    /* Contenedores de Métricas (Tarjetas) */
     div[data-testid="stMetric"] {
-        background-color: rgba(128, 128, 128, 0.1);
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid rgba(128, 128, 128, 0.2);
+        background-color: rgba(255, 255, 255, 0.03); /* Fondo translúcido sutil */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    div[data-testid="stMetric"]:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Ajuste de Tipografía para Títulos */
+    h1, h2, h3 {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        color: #f0f2f6;
+    }
+    
+    /* Personalización del Expander */
+    .streamlit-expanderHeader {
+        font-weight: 500;
+        color: #e0e0e0;
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📊 Simulador de Inversión Avanzado")
+# --- TÍTULOS (LIMPIOS SIN EMOJIS) ---
+st.title("Simulador de Inversión Avanzado")
 st.markdown("Proyecta el crecimiento de tu patrimonio con aportes mensuales y **extraordinarios**.")
 
 # --- BARRA LATERAL (CONTROLES) ---
@@ -52,7 +79,7 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # SECCIÓN: Abonos Extraordinarios (MEJORADA)
+    # SECCIÓN: Abonos Extraordinarios
     st.header("4. Abonos Extraordinarios")
     st.caption("Añade fechas específicas para inyectar capital extra (ej. Aguinaldos).")
     
@@ -96,7 +123,6 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
         for index, row in df_limpio.iterrows():
             try:
                 # CORRECCIÓN CLAVE: Forzamos la conversión a fecha real
-                # Esto evita que una fecha en formato texto sea ignorada
                 fecha_abono = pd.to_datetime(row["Fecha"])
                 monto_abono = float(row["Monto"])
                 
@@ -110,7 +136,6 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
                     else:
                         abonos_map[diff_meses] = monto_abono
             except Exception:
-                # Si la fila tiene datos basura, la saltamos sin romper la app
                 continue
 
     # --- Tasas ---
@@ -120,8 +145,8 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
     
     # --- Proyección Mes a Mes ---
     valores_nominales = [inicial]
-    serie_aportes = [inicial] # Nueva lista para graficar composición
-    serie_real = [inicial]    # Nueva lista para graficar valor real mes a mes
+    serie_aportes = [inicial] 
+    serie_real = [inicial]   
     
     total_depositado = inicial
     
@@ -135,7 +160,7 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
         nuevo_saldo = valores_nominales[-1] + interes + aporte + extra_este_mes
         nuevo_aporte_acumulado = total_depositado + aporte + extra_este_mes
         
-        # Calculo de Valor Real mes a mes (descontando inflación mensual aprox)
+        # Calculo de Valor Real mes a mes
         inflacion_mensual = (1 + inflacion_pct/100)**(1/12) - 1
         nuevo_saldo_real = nuevo_saldo / ((1 + inflacion_mensual)**(i+1))
 
@@ -153,8 +178,8 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
     
     return {
         "serie_nominal": valores_nominales,
-        "serie_aportes": serie_aportes, # Necesario para gráfico composición
-        "serie_real": serie_real,       # Necesario para gráfico inflación
+        "serie_aportes": serie_aportes,
+        "serie_real": serie_real,
         "saldo_nominal": saldo_final_nominal,
         "saldo_real": saldo_final_real,
         "tasa_real_neta": tasa_real_neta_anual,
@@ -168,7 +193,8 @@ escenarios_data = {
 }
 
 # --- VISUALIZACIÓN ---
-st.markdown("### 🏁 Resultados Comparativos")
+# TÍTULO LIMPIO (Sin emoji)
+st.markdown("### Resultados Comparativos")
 
 cols = st.columns(3)
 datos_grafico = pd.DataFrame()
@@ -192,8 +218,8 @@ for (nombre, tasa_input), col in zip(escenarios_data.items(), cols):
         if is_selected:
             # Resaltado visual con fondo dorado y borde
             st.markdown(f"""
-            <div style="background-color: rgba(255, 215, 0, 0.15); padding: 10px; border-radius: 8px; border: 1px solid #ffd700; text-align: center; margin-bottom: 10px;">
-                <h4 style="margin:0; color: #d4af37;">🎯 {nombre} ({tasa_input}%)</h4>
+            <div style="background-color: rgba(255, 215, 0, 0.1); padding: 15px; border-radius: 10px; border: 1px solid rgba(255, 215, 0, 0.5); text-align: center; margin-bottom: 15px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);">
+                <h4 style="margin:0; color: #ffd700; font-family: 'Helvetica Neue', sans-serif;">🎯 {nombre} ({tasa_input}%)</h4>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -202,9 +228,9 @@ for (nombre, tasa_input), col in zip(escenarios_data.items(), cols):
         st.metric(label="Saldo Nominal Futuro", value=f"₡ {res['saldo_nominal']:,.0f}")
         
         st.markdown(f"""
-        <div style="margin-top: -10px;">
-            <span style="font-size: 0.9em; color: gray;">Valor Real (Poder de compra hoy)</span><br>
-            <span style="font-size: 1.3em; font-weight: bold; color: #2ca02c;">₡ {res['saldo_real']:,.0f}</span>
+        <div style="margin-top: -10px; margin-bottom: 10px;">
+            <span style="font-size: 0.9em; color: #a0a0a0;">Valor Real (Poder de compra hoy)</span><br>
+            <span style="font-size: 1.4em; font-weight: bold; color: #4ade80;">₡ {res['saldo_real']:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
         
