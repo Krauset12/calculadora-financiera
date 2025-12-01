@@ -79,15 +79,22 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
     # Convertimos la tabla de fechas a un diccionario: { numero_de_mes: monto_extra }
     abonos_map = {}
     
+    # Validación de seguridad: Si no hay fecha de inicio, usamos hoy para evitar crash
+    if start_date is None:
+        start_date = date.today()
+    
     if not abonos_extra_df.empty:
-        for index, row in abonos_extra_df.iterrows():
-            # Validamos que los datos existan
-            if pd.notnull(row["Fecha"]) and pd.notnull(row["Monto"]):
-                fecha_abono = row["Fecha"]
-                monto_abono = row["Monto"]
-                
+        # CORRECCIÓN DE ERROR: Limpiamos filas vacías antes de procesar
+        # Esto elimina filas donde la fecha o el monto sean 'None' o vacíos
+        df_limpio = abonos_extra_df.dropna(subset=["Fecha", "Monto"]).copy()
+        
+        for index, row in df_limpio.iterrows():
+            fecha_abono = row["Fecha"]
+            monto_abono = row["Monto"]
+            
+            # Doble chequeo de seguridad: asegurar que fecha_abono tiene atributo .year
+            if hasattr(fecha_abono, 'year'):
                 # Calculamos cuántos meses hay desde el inicio hasta esa fecha
-                # Fórmula: (Diferencia Años * 12) + Diferencia Meses
                 diff_meses = (fecha_abono.year - start_date.year) * 12 + (fecha_abono.month - start_date.month)
                 
                 # Si el abono cae dentro del plazo del proyecto (y no es pasado), lo sumamos
