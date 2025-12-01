@@ -67,6 +67,15 @@ with st.sidebar:
             },
             key="abonos_editor"
         )
+    
+    st.markdown("---")
+    
+    # NUEVO: Control de Visualización
+    st.header("5. Visualización")
+    escenario_view = st.selectbox(
+        "Seleccionar Escenario a Detallar", 
+        ["Todos", "Conservador", "Moderado", "Optimista"]
+    )
 
 # --- LÓGICA DE CÁLCULO ---
 
@@ -176,7 +185,12 @@ for (nombre, tasa_input), col in zip(escenarios_data.items(), cols):
     datos_grafico[nombre] = puntos
     
     with col:
-        st.subheader(f"{nombre} ({tasa_input}%)")
+        # Resaltar si es el escenario seleccionado
+        if escenario_view == nombre:
+            st.markdown(f"#### 🎯 {nombre} ({tasa_input}%)")
+        else:
+            st.subheader(f"{nombre} ({tasa_input}%)")
+            
         st.metric(label="Saldo Nominal Futuro", value=f"₡ {res['saldo_nominal']:,.0f}")
         
         st.markdown(f"""
@@ -196,44 +210,58 @@ st.markdown("---")
 # PESTAÑAS AMPLIADAS
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Crecimiento", "🍰 Composición (Interés vs Capital)", "💸 Impacto Inflación", "📋 Tabla Detallada"])
 
-# TAB 1: El gráfico comparativo original
+# TAB 1: Gráfico de Crecimiento
 with tab1:
-    st.subheader(f"Evolución Comparativa (Nominal)")
-    st.line_chart(datos_grafico, use_container_width=True)
-    st.caption(f"Comparación de los saldos nominales de los 3 escenarios.")
+    if escenario_view == "Todos":
+        st.subheader("Evolución Comparativa (Todos los Escenarios)")
+        st.line_chart(datos_grafico, use_container_width=True)
+        st.caption("Comparación de los saldos nominales de los 3 escenarios.")
+    else:
+        st.subheader(f"Evolución - Escenario {escenario_view}")
+        # Filtramos solo la columna seleccionada
+        st.line_chart(datos_grafico[escenario_view], use_container_width=True)
+        st.caption(f"Proyección detallada para el perfil {escenario_view}.")
+
+# Lógica para determinar qué escenario mostrar en los detalles
+if escenario_view == "Todos":
+    target_escenario = "Moderado"
+    aviso_escenario = "Mostrando escenario **Moderado** por defecto (selecciona uno específico en el menú para cambiar)."
+else:
+    target_escenario = escenario_view
+    aviso_escenario = f"Analizando escenario: **{target_escenario}**"
 
 # TAB 2: Gráfico de Área (Composición)
 with tab2:
-    st.subheader("¿Cuánto es mi esfuerzo y cuánto es ganancia?")
-    st.caption("Este gráfico muestra la magia del interés compuesto usando el escenario **Moderado**.")
+    st.subheader(f"¿Cuánto es mi esfuerzo y cuánto es ganancia? ({target_escenario})")
+    st.caption(aviso_escenario)
     
-    # Usamos el escenario Moderado para el ejemplo
-    res_mod = resultados_completos["Moderado"]
+    # Usamos el escenario seleccionado
+    res_target = resultados_completos[target_escenario]
     
     # Preparamos datos anuales
     datos_area = pd.DataFrame({
-        "Tu Aporte": [res_mod["serie_aportes"][i*12] for i in range(plazo_anos + 1)],
-        "Intereses Ganados": [(res_mod["serie_nominal"][i*12] - res_mod["serie_aportes"][i*12]) for i in range(plazo_anos + 1)]
+        "Tu Aporte": [res_target["serie_aportes"][i*12] for i in range(plazo_anos + 1)],
+        "Intereses Ganados": [(res_target["serie_nominal"][i*12] - res_target["serie_aportes"][i*12]) for i in range(plazo_anos + 1)]
     })
     
     # Gráfico de área apilada
     st.area_chart(datos_area, color=["#1f77b4", "#aec7e8"])
-    st.info("💡 **Observa:** La zona clara (Intereses) empieza pequeña, pero con el tiempo se vuelve más grande que la zona oscura (Tu Aporte). ¡Eso es el dinero trabajando por ti!")
+    st.info("💡 **Observa:** La zona clara (Intereses) empieza pequeña, pero con el tiempo se vuelve más grande que la zona oscura (Tu Aporte).")
 
 # TAB 3: Nominal vs Real
 with tab3:
-    st.subheader("La ilusión del dinero: Nominal vs Real")
-    st.caption("Diferencia entre el número que verás en tu cuenta y lo que realmente podrás comprar con él (Escenario Moderado).")
+    st.subheader(f"La ilusión del dinero: Nominal vs Real ({target_escenario})")
+    st.caption(aviso_escenario)
     
-    res_mod = resultados_completos["Moderado"]
+    res_target = resultados_completos[target_escenario]
     
     datos_realidad = pd.DataFrame({
-        "Saldo Nominal (Billetes)": [res_mod["serie_nominal"][i*12] for i in range(plazo_anos + 1)],
-        "Valor Real (Poder de Compra)": [res_mod["serie_real"][i*12] for i in range(plazo_anos + 1)]
+        "Saldo Nominal (Billetes)": [res_target["serie_nominal"][i*12] for i in range(plazo_anos + 1)],
+        "Valor Real (Poder de Compra)": [res_target["serie_real"][i*12] for i in range(plazo_anos + 1)]
     })
     
     st.line_chart(datos_realidad, color=["#1f77b4", "#2ca02c"])
-    st.warning(f"⚠️ **Atención:** La brecha entre la línea azul y la verde es el 'impuesto invisible' de la inflación ({inflacion}% anual).")
+    st.warning(f"⚠️ **Atención:** La brecha entre la línea azul y la verde es el efecto de la inflación ({inflacion}% anual).")
 
 # TAB 4: Tabla
 with tab4:
