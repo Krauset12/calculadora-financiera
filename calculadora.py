@@ -29,7 +29,7 @@ st.markdown("Proyecta el crecimiento de tu patrimonio con aportes mensuales y **
 with st.sidebar:
     st.header("1. Tu Inversión")
     
-    # NUEVO: Fecha de inicio para calcular cuándo caen los abonos
+    # Fecha de inicio para calcular cuándo caen los abonos
     fecha_inicio = st.date_input("Fecha de Inicio", value=date.today())
     
     saldo_inicial = st.number_input("Saldo Inicial (₡)", value=0, step=100000, format="%d")
@@ -52,17 +52,15 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # NUEVA SECCIÓN: Abonos Extraordinarios
+    # SECCIÓN: Abonos Extraordinarios
     with st.expander("4. Abonos Extraordinarios (Opcional)", expanded=False):
         st.caption("Añade fechas específicas para inyectar capital extra (ej. Aguinaldos).")
         
-        # Creamos una estructura base
         df_base = pd.DataFrame(columns=["Fecha", "Monto"])
         
-        # Editor interactivo (Tabla donde puedes escribir)
         abonos_df = st.data_editor(
             df_base,
-            num_rows="dynamic", # Permite al usuario agregar filas
+            num_rows="dynamic",
             column_config={
                 "Fecha": st.column_config.DateColumn("Fecha", format="DD/MM/YYYY", required=True),
                 "Monto": st.column_config.NumberColumn("Monto (₡)", format="%d", min_value=0, required=True)
@@ -76,33 +74,34 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
     meses = int(anos * 12)
     
     # --- Procesamiento de Abonos Extraordinarios ---
-    # Convertimos la tabla de fechas a un diccionario: { numero_de_mes: monto_extra }
     abonos_map = {}
     
-    # Validación de seguridad: Si no hay fecha de inicio, usamos hoy para evitar crash
     if start_date is None:
         start_date = date.today()
     
     if not abonos_extra_df.empty:
-        # CORRECCIÓN DE ERROR: Limpiamos filas vacías antes de procesar
-        # Esto elimina filas donde la fecha o el monto sean 'None' o vacíos
+        # Limpiamos filas vacías
         df_limpio = abonos_extra_df.dropna(subset=["Fecha", "Monto"]).copy()
         
         for index, row in df_limpio.iterrows():
-            fecha_abono = row["Fecha"]
-            monto_abono = row["Monto"]
-            
-            # Doble chequeo de seguridad: asegurar que fecha_abono tiene atributo .year
-            if hasattr(fecha_abono, 'year'):
-                # Calculamos cuántos meses hay desde el inicio hasta esa fecha
+            try:
+                # CORRECCIÓN CLAVE: Forzamos la conversión a fecha real
+                # Esto evita que una fecha en formato texto sea ignorada
+                fecha_abono = pd.to_datetime(row["Fecha"])
+                monto_abono = float(row["Monto"])
+                
+                # Calcular meses de diferencia
                 diff_meses = (fecha_abono.year - start_date.year) * 12 + (fecha_abono.month - start_date.month)
                 
-                # Si el abono cae dentro del plazo del proyecto (y no es pasado), lo sumamos
+                # Solo sumar si cae dentro del plazo (y es futuro)
                 if 0 <= diff_meses < meses:
                     if diff_meses in abonos_map:
                         abonos_map[diff_meses] += monto_abono
                     else:
                         abonos_map[diff_meses] = monto_abono
+            except Exception:
+                # Si la fila tiene datos basura, la saltamos sin romper la app
+                continue
 
     # --- Tasas ---
     tasa_neta_nominal_anual = (tasa_bruta_pct / 100) * (1 - (comision_pct / 100))
@@ -114,13 +113,11 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
     total_depositado = inicial
     
     for i in range(meses):
-        # 1. Calculamos interés sobre el saldo del mes anterior
         interes = valores_nominales[-1] * tasa_mensual_efectiva
         
-        # 2. Verificamos si hay abono extra en ESTE mes específico 'i'
+        # Verificar abono extra este mes
         extra_este_mes = abonos_map.get(i, 0)
         
-        # 3. Sumamos todo: Saldo anterior + Interés + Aporte Mensual + Extra
         nuevo_saldo = valores_nominales[-1] + interes + aporte + extra_este_mes
         
         valores_nominales.append(nuevo_saldo)
@@ -152,13 +149,11 @@ st.markdown("### 🏁 Resultados Comparativos")
 cols = st.columns(3)
 datos_grafico = pd.DataFrame()
 
-# Iteramos sobre los 3 escenarios
 for (nombre, tasa_input), col in zip(escenarios_data.items(), cols):
     res = calcular_escenario_completo(
         tasa_input, plazo_anos, aporte_mensual, saldo_inicial, comision, inflacion, abonos_df, fecha_inicio
     )
     
-    # Datos para el gráfico
     puntos = [res["serie_nominal"][i*12] for i in range(plazo_anos + 1)]
     datos_grafico[nombre] = puntos
     
