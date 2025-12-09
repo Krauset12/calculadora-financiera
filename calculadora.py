@@ -10,60 +10,202 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILOS CSS PROFESIONALES (THEME OVERRIDE) ---
+# --- ESTILOS CSS PROFESIONALES (THEME PREMIUM) ---
 st.markdown("""
 <style>
-    /* FONDO "MIDNIGHT DEEP" */
+    /* FONDO PREMIUM CON GRADIENTE PROFUNDO */
     .stApp {
-        background-color: #0e1117;
-        background-image: radial-gradient(circle at 50% 0%, #1c2331 0%, #0e1117 70%);
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
         background-attachment: fixed;
     }
     
     /* ESTILOS GLOBALES DE TEXTO */
     h1, h2, h3 {
         color: #ffffff !important;
-        font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
-        font-weight: 600;
-        letter-spacing: -0.02em;
+        font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+    }
+    
+    h1 {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     
     p, label, .stMarkdown, .caption {
-        color: #cfd8dc !important;
+        color: #cbd5e1 !important;
+        font-family: 'Inter', system-ui, sans-serif;
     }
     
-    /* MEJORA: INPUTS MÁS CLAROS CON MEJOR CONTRASTE */
+    /* SIDEBAR CON GLASSMORPHISM */
+    section[data-testid="stSidebar"] {
+        background: rgba(15, 23, 42, 0.8) !important;
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(251, 191, 36, 0.1);
+    }
+    
+    section[data-testid="stSidebar"] > div {
+        background: transparent !important;
+    }
+    
+    /* INPUTS PREMIUM CON BRILLO DORADO */
     .stNumberInput input, .stDateInput input, .stSelectbox div[data-baseweb="select"] {
-        background-color: #1a202c !important; /* Más oscuro para mayor contraste */
-        color: white !important; 
-        border: 2px solid #4299e1 !important; /* Borde azul más visible */
-        border-radius: 6px;
+        background: linear-gradient(145deg, #1e293b, #334155) !important;
+        color: #f1f5f9 !important; 
+        border: 1px solid rgba(251, 191, 36, 0.3) !important;
+        border-radius: 8px;
         font-weight: 500;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
     }
     
     .stNumberInput input:focus, .stDateInput input:focus {
-        border-color: #63b3ed !important;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+        border-color: #fbbf24 !important;
+        box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2), 0 4px 12px rgba(251, 191, 36, 0.3);
+        transform: translateY(-1px);
     }
     
-    /* EXPANDER ESTILIZADO */
+    /* SELECTBOX MEJORADO */
+    .stSelectbox div[data-baseweb="select"] > div {
+        background: linear-gradient(145deg, #1e293b, #334155) !important;
+    }
+    
+    /* EXPANDER CON EFECTO PREMIUM */
     .streamlit-expanderHeader {
-        background-color: #2d3748 !important;
-        border: 1px solid #4a5568;
-        border-radius: 8px;
-        color: white !important;
+        background: linear-gradient(145deg, #1e293b, #2d3748) !important;
+        border: 1px solid rgba(251, 191, 36, 0.2) !important;
+        border-radius: 10px !important;
+        color: #fbbf24 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
     }
     
-    /* QUITANDO PADDING EXTRA SUPERIOR */
+    .streamlit-expanderHeader:hover {
+        border-color: rgba(251, 191, 36, 0.5) !important;
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+    }
+    
+    /* TABS CON DISEÑO MODERNO */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: transparent;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: linear-gradient(145deg, #1e293b, #334155);
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        border-radius: 8px;
+        color: #cbd5e1;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: linear-gradient(145deg, #334155, #475569);
+        border-color: rgba(251, 191, 36, 0.4);
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+        color: #0f172a !important;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+    }
+    
+    /* BOTONES CON ESTILO PREMIUM */
+    .stButton > button {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #0f172a;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 12px 24px;
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
+    }
+    
+    /* DATAFRAME CON ESTILO OSCURO */
+    .stDataFrame {
+        background: rgba(30, 41, 59, 0.6);
+        border-radius: 12px;
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        overflow: hidden;
+    }
+    
+    /* MÉTRICAS MEJORADAS */
+    div[data-testid="metric-container"] {
+        background: linear-gradient(145deg, #1e293b, #334155);
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        border-radius: 10px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* ALERTAS CON BRILLO */
+    .stAlert {
+        background: linear-gradient(145deg, #1e293b, #334155) !important;
+        border-left: 4px solid #fbbf24 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* PADDING OPTIMIZADO */
     .block-container {
         padding-top: 2rem;
+        max-width: 1400px;
+    }
+    
+    /* SCROLLBAR PERSONALIZADO */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #1e293b;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        border-radius: 5px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- TÍTULOS ---
-st.title("Simulador de Inversión Avanzado")
-st.markdown("Proyecta el crecimiento de tu patrimonio con aportes mensuales y **extraordinarios**.")
+# --- TÍTULOS CON DISEÑO PREMIUM ---
+st.markdown("""
+<div style="margin-bottom: 2rem;">
+    <h1 style="
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    ">
+        Simulador de Inversión Avanzado
+    </h1>
+    <p style="
+        font-size: 1.1rem;
+        color: #94a3b8;
+        margin: 0;
+        font-weight: 400;
+    ">
+        Proyecta el crecimiento de tu patrimonio con 
+        <span style="color: #fbbf24; font-weight: 600;">aportes mensuales</span> y 
+        <span style="color: #10b981; font-weight: 600;">extraordinarios</span>
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # --- BARRA LATERAL (CONTROLES) ---
 with st.sidebar:
@@ -228,7 +370,33 @@ escenarios_data = {
 }
 
 # --- VISUALIZACIÓN ---
-st.markdown("### Resultados Comparativos")
+# --- VISUALIZACIÓN CON HEADER PREMIUM ---
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+    border-left: 4px solid #fbbf24;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 2rem 0 1.5rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+">
+    <h2 style="
+        margin: 0;
+        font-size: 1.8rem;
+        color: #fbbf24;
+        font-weight: 700;
+    ">
+        💰 Resultados de tu Inversión
+    </h2>
+    <p style="
+        margin: 8px 0 0 0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+    ">
+        Compara tres escenarios y visualiza el potencial de crecimiento de tu patrimonio
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # MEJORA: Mostrar advertencias de abonos ignorados (solo una vez)
 advertencias_mostradas = False
@@ -310,16 +478,54 @@ st.markdown("---")
 # PESTAÑAS AMPLIADAS
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Crecimiento", "🍰 Composición (Interés vs Capital)", "💸 Impacto Inflación", "📋 Tabla Detallada"])
 
-# TAB 1: Gráfico de Crecimiento
+# TAB 1: Gráfico de Crecimiento con estilo premium
 with tab1:
     if escenario_view == "Todos":
-        st.subheader("Evolución Comparativa (Todos los Escenarios)")
-        st.line_chart(datos_grafico, use_container_width=True)
-        st.caption("Comparación de los saldos nominales de los 3 escenarios.")
+        st.subheader("📊 Evolución Comparativa de Escenarios")
+        
+        # Crear gráfico con colores premium
+        chart_data = datos_grafico.copy()
+        chart_data.index.name = "Año"
+        
+        st.line_chart(
+            chart_data, 
+            use_container_width=True,
+            color=["#6366f1", "#fbbf24", "#10b981"]  # Índigo, Dorado, Verde
+        )
+        
+        # Panel informativo con diseño premium
+        st.markdown("""
+        <div style="
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(51, 65, 85, 0.4));
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        ">
+            <div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
+                📌 <strong style="color: #fbbf24;">Líneas de proyección:</strong><br>
+                <span style="color: #6366f1;">━━</span> <strong>Conservador</strong> | 
+                <span style="color: #fbbf24;">━━</span> <strong>Moderado</strong> | 
+                <span style="color: #10b981;">━━</span> <strong>Optimista</strong>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.subheader(f"Evolución - Escenario {escenario_view}")
-        st.line_chart(datos_grafico[escenario_view], use_container_width=True)
-        st.caption(f"Proyección detallada para el perfil {escenario_view}.")
+        st.subheader(f"📈 Proyección Detallada - {escenario_view}")
+        
+        # Color según escenario
+        color_map = {
+            "Conservador": "#6366f1",
+            "Moderado": "#fbbf24", 
+            "Optimista": "#10b981"
+        }
+        
+        st.line_chart(
+            datos_grafico[escenario_view], 
+            use_container_width=True,
+            color=color_map[escenario_view]
+        )
 
 # Lógica para determinar qué escenario mostrar en los detalles
 if escenario_view == "Todos":
@@ -329,39 +535,149 @@ else:
     target_escenario = escenario_view
     aviso_escenario = f"Analizando escenario: **{target_escenario}**"
 
-# TAB 2: Gráfico de Área (Composición)
+# TAB 2: Gráfico de Área con diseño premium
 with tab2:
-    st.subheader(f"¿Cuánto es mi esfuerzo y cuánto es ganancia? ({target_escenario})")
-    st.caption(aviso_escenario)
+    st.subheader(f"💎 Composición de Tu Patrimonio - {target_escenario}")
+    
+    # Banner informativo
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+        border-left: 4px solid #fbbf24;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        color: #cbd5e1;
+        font-size: 0.9rem;
+    ">
+        {aviso_escenario}
+    </div>
+    """, unsafe_allow_html=True)
     
     res_target = resultados_completos[target_escenario]
     
     datos_area = pd.DataFrame({
-        "Tu Aporte": [res_target["serie_aportes"][i*12] for i in range(plazo_anos + 1)],
-        "Intereses Ganados": [(res_target["serie_nominal"][i*12] - res_target["serie_aportes"][i*12]) for i in range(plazo_anos + 1)]
+        "💵 Tu Capital": [res_target["serie_aportes"][i*12] for i in range(plazo_anos + 1)],
+        "✨ Intereses Compuestos": [(res_target["serie_nominal"][i*12] - res_target["serie_aportes"][i*12]) for i in range(plazo_anos + 1)]
     })
     
-    st.area_chart(datos_area, color=["#3182ce", "#90cdf4"])
-    st.info("💡 **Observa:** La zona clara (Intereses) empieza pequeña, pero con el tiempo se vuelve más grande que la zona oscura (Tu Aporte).")
+    st.area_chart(
+        datos_area, 
+        color=["#475569", "#fbbf24"],  # Gris oscuro y Dorado
+        use_container_width=True
+    )
+    
+    # Insight con diseño premium
+    st.markdown("""
+    <div style="
+        background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    ">
+        <div style="color: #10b981; font-weight: 600; font-size: 1rem; margin-bottom: 8px;">
+            💡 El Poder del Interés Compuesto
+        </div>
+        <div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
+            La zona <strong style="color: #fbbf24;">dorada</strong> representa el dinero que trabaja para ti. 
+            Con el tiempo, tus intereses generan más intereses, superando incluso tus aportes iniciales.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# TAB 3: Nominal vs Real
+# TAB 3: Nominal vs Real con diseño premium
 with tab3:
-    st.subheader(f"La ilusión del dinero: Nominal vs Real ({target_escenario})")
-    st.caption(aviso_escenario)
+    st.subheader(f"⚖️ Valor Real vs Nominal - {target_escenario}")
+    
+    # Banner de advertencia premium
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+        border-left: 4px solid #fbbf24;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        color: #cbd5e1;
+        font-size: 0.9rem;
+    ">
+        {aviso_escenario}
+    </div>
+    """, unsafe_allow_html=True)
     
     res_target = resultados_completos[target_escenario]
     
     datos_realidad = pd.DataFrame({
-        "Saldo Nominal (Billetes)": [res_target["serie_nominal"][i*12] for i in range(plazo_anos + 1)],
-        "Valor Real (Poder de Compra)": [res_target["serie_real"][i*12] for i in range(plazo_anos + 1)]
+        "💵 Saldo Nominal": [res_target["serie_nominal"][i*12] for i in range(plazo_anos + 1)],
+        "💎 Poder de Compra Real": [res_target["serie_real"][i*12] for i in range(plazo_anos + 1)]
     })
     
-    st.line_chart(datos_realidad, color=["#63b3ed", "#48bb78"])
-    st.warning(f"⚠️ **Atención:** La brecha entre la línea azul y la verde es el efecto de la inflación ({inflacion}% anual).")
+    st.line_chart(
+        datos_realidad, 
+        color=["#60a5fa", "#10b981"],  # Azul cielo y Verde esmeralda
+        use_container_width=True
+    )
+    
+    # Cálculo de la pérdida por inflación
+    perdida_inflacion = res_target["serie_nominal"][-1] - res_target["serie_real"][-1]
+    porcentaje_perdida = (perdida_inflacion / res_target["serie_nominal"][-1]) * 100
+    
+    # Panel de análisis premium
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    ">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div style="
+                font-size: 2rem;
+            ">⚠️</div>
+            <div>
+                <div style="color: #fbbf24; font-weight: 700; font-size: 1.1rem;">
+                    Impacto de la Inflación
+                </div>
+                <div style="color: #94a3b8; font-size: 0.85rem;">
+                    Inflación anual: {inflacion}%
+                </div>
+            </div>
+        </div>
+        
+        <div style="
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 12px;
+        ">
+            <div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.8;">
+                📉 <strong style="color: #ef4444;">Pérdida de poder adquisitivo:</strong><br>
+                <span style="font-size: 1.3rem; color: #f87171; font-weight: 700;">₡{perdida_inflacion:,.0f}</span>
+                <span style="color: #94a3b8; margin-left: 8px;">({porcentaje_perdida:.1f}% del saldo nominal)</span>
+            </div>
+        </div>
+        
+        <div style="
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            margin-top: 14px;
+            line-height: 1.6;
+            padding-top: 14px;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+        ">
+            💡 <strong>Lo que significa:</strong> Aunque tengas ₡{res_target["serie_nominal"][-1]:,.0f} 
+            en el futuro, tu poder de compra será equivalente a ₡{res_target["serie_real"][-1]:,.0f} 
+            de hoy. La brecha entre ambas líneas representa el "costo invisible" de la inflación.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# TAB 4: Tabla con Exportación
+# TAB 4: Tabla con diseño premium y exportación
 with tab4:
-    st.subheader("Tabla Detallada - Proyección Anual")
+    st.subheader("📊 Proyección Detallada Año por Año")
     
     # Crear tabla más completa
     tabla_completa = pd.DataFrame()
@@ -372,17 +688,42 @@ with tab4:
         tabla_completa[f"{nombre} (Nominal)"] = [res["serie_nominal"][i*12] for i in range(plazo_anos + 1)]
         tabla_completa[f"{nombre} (Real)"] = [res["serie_real"][i*12] for i in range(plazo_anos + 1)]
     
+    # Mostrar tabla con formato premium
     st.dataframe(
         tabla_completa.style.format({
             col: "₡ {:,.0f}" for col in tabla_completa.columns if col != "Año"
-        }),
-        use_container_width=True
+        }).background_gradient(
+            subset=[col for col in tabla_completa.columns if "Nominal" in col],
+            cmap="YlOrBr",
+            vmin=0
+        ),
+        use_container_width=True,
+        height=400
     )
     
-    # MEJORA: Botón de descarga
+    # Panel de exportación premium
+    st.markdown("""
+    <div style="
+        background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(51, 65, 85, 0.4));
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    ">
+        <div style="color: #fbbf24; font-weight: 600; font-size: 1rem; margin-bottom: 12px;">
+            📥 Exportar Datos
+        </div>
+        <div style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 16px;">
+            Descarga la proyección completa en formato CSV para análisis avanzado en Excel o Google Sheets
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Botón de descarga con estilo mejorado
     csv = tabla_completa.to_csv(index=False).encode('utf-8')
     st.download_button(
-        label="📥 Descargar Proyección Completa (CSV)",
+        label="⬇️ Descargar Proyección Completa (CSV)",
         data=csv,
         file_name=f"proyeccion_inversion_{date.today()}.csv",
         mime="text/csv",
