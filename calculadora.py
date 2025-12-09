@@ -220,9 +220,9 @@ for (nombre, tasa_input), col in zip(escenarios_data.items(), cols):
         is_selected = (escenario_view == nombre)
         
         if is_selected:
-            border_color = "#ffd700"  # Dorado
-            bg_color = "rgba(255, 215, 0, 0.08)" # Fondo dorado muy sutil
-            shadow = "0 0 20px rgba(255, 215, 0, 0.15)" # Resplandor
+            border_color = "#4ade80"  # Verde claro para resaltar
+            bg_color = "rgba(74, 222, 128, 0.1)" # Fondo verde claro muy sutil
+            shadow = "0 0 20px rgba(74, 222, 128, 0.2)" # Resplandor verde
             icon_header = "🌟"
             opacity = "1"
         else:
@@ -233,6 +233,7 @@ for (nombre, tasa_input), col in zip(escenarios_data.items(), cols):
             opacity = "0.85" # Un poco más apagado para que no compita
 
         # Generamos la tarjeta COMPLETA en HTML
+        # Corregido el error de f-string y comillas
         st.markdown(f"""
         <div style="
             background-color: {bg_color};
