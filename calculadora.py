@@ -194,8 +194,8 @@ with st.sidebar:
     st.header("5. Visualización")
     escenario_view = st.selectbox("Seleccionar Escenario", ["Todos", "Conservador", "Moderado", "Optimista"])
 
-# --- FUNCIÓN DE CÁLCULO (OPTIMIZADA) ---
-@st.cache_data
+# --- FUNCIÓN DE CÁLCULO ---
+# CRÍTICO: Eliminamos @st.cache_data para asegurar que los abonos se actualicen en tiempo real
 def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_pct, inflacion_pct, abonos_extra_df, start_date):
     meses = int(anos * 12)
     abonos_map = {}
@@ -210,31 +210,26 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
         
         for index, row in df_limpio.iterrows():
             try:
-                # 1. Validación de Fecha (Sin usar pd.to_datetime dentro del try ciegamente)
+                # 1. Validación de Fecha
                 raw_fecha = row.get("Fecha")
-                
                 fecha_abono = None
                 
-                # Caso A: Ya es un objeto date o datetime (Lo ideal desde st.data_editor)
+                # Caso A: Objeto date/datetime
                 if isinstance(raw_fecha, (date, datetime)):
                     fecha_abono = raw_fecha if isinstance(raw_fecha, date) else raw_fecha.date()
-                
-                # Caso B: Es un Timestamp de Pandas
+                # Caso B: Timestamp
                 elif isinstance(raw_fecha, pd.Timestamp):
                     fecha_abono = raw_fecha.date()
-                    
-                # Caso C: Es cadena de texto (String)
+                # Caso C: String (Intentar parsear formato día/mes/año común en CR)
                 elif isinstance(raw_fecha, str) and raw_fecha.strip():
                     try:
-                        # Intentar parsear con pandas forzando día primero (CR format)
                         ts = pd.to_datetime(raw_fecha, dayfirst=True)
                         fecha_abono = ts.date()
                     except:
-                         abonos_ignorados.append(f"Fila {index+1}: Formato de fecha desconocido")
-                         continue
+                         pass
                 
                 if not fecha_abono:
-                    continue # Ignorar vacíos
+                    continue # Fecha no válida, se salta
                 
                 # 2. Validación de Monto
                 monto_raw = row.get("Monto")
@@ -244,14 +239,14 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
                 monto_abono = pd.to_numeric(monto_raw, errors='coerce')
                 
                 if pd.isna(monto_abono) or monto_abono <= 0:
-                    abonos_ignorados.append(f"Fila {index+1}: Monto inválido o cero")
-                    continue
+                    continue # Monto inválido, se salta
                 
                 monto_abono = float(monto_abono)
                 
-                # 3. Cálculo de tiempo (diff_meses)
+                # 3. Cálculo de mes relativo
                 diff_meses = (fecha_abono.year - start_date.year) * 12 + (fecha_abono.month - start_date.month)
                 
+                # Solo sumar si cae dentro del rango de proyección (0 a total meses)
                 if 0 <= diff_meses < meses:
                     abonos_map[diff_meses] = abonos_map.get(diff_meses, 0) + monto_abono
                 elif diff_meses < 0:
@@ -259,12 +254,10 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
                 else:
                     abonos_ignorados.append(f"Fila {index+1}: Fecha fuera del plazo ({anos} años)")
                     
-            except Exception as e:
-                # Catch-all para evitar crash de numpy u otros errores raros
-                abonos_ignorados.append(f"Fila {index+1}: Error inesperado al procesar")
+            except Exception:
                 continue
 
-    # Cálculos de tasas (Comisión sobre Rendimiento)
+    # Cálculos de tasas
     tasa_neta_nominal_anual = (tasa_bruta_pct / 100) * (1 - (comision_pct / 100))
     tasa_mensual_efectiva = (1 + tasa_neta_nominal_anual)**(1/12) - 1
     inflacion_mensual = (1 + inflacion_pct/100)**(1/12) - 1
@@ -389,7 +382,7 @@ for (nombre, tasa_input), col in zip(escenarios_data.items(), cols):
 
 st.markdown("---")
 
-# --- TABS CON INFORMACIÓN RECUPERADA ---
+# --- TABS CON EXPLICACIONES RECUPERADAS ---
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Crecimiento", "🍰 Composición", "💸 Inflación", "📋 Tabla Detallada"])
 
 # Determinar escenario objetivo
@@ -401,8 +394,7 @@ with tab1:
     if escenario_view == "Todos":
         st.subheader("📊 Evolución Comparativa")
         st.line_chart(datos_grafico, use_container_width=True, color=["#6366f1", "#fbbf24", "#10b981"])
-        
-        # Recuperando la leyenda explicativa
+        # Leyenda explicativa recuperada
         st.markdown("""
         <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 12px; margin-top: 12px; text-align: center;">
             <span style="color: #6366f1; font-weight: 600;">━━</span> Conservador &nbsp;|&nbsp; 
@@ -414,6 +406,7 @@ with tab1:
         st.subheader(f"📈 Proyección - {escenario_view}")
         colors = {"Conservador": "#6366f1", "Moderado": "#fbbf24", "Optimista": "#10b981"}
         st.line_chart(datos_grafico[escenario_view], use_container_width=True, color=colors[escenario_view])
+        st.caption(f"Visualizando proyección del escenario **{escenario_view}** a lo largo del tiempo.")
 
 # TAB 2: Composición
 with tab2:
@@ -425,8 +418,8 @@ with tab2:
     })
     st.area_chart(datos_area, color=["#475569", "#fbbf24"], use_container_width=True)
     
-    # Recuperando el insight de interés compuesto
-    st.info("💡 La zona **dorada** representa el dinero que trabaja para ti (Intereses). Con el tiempo, esta zona debería crecer exponencialmente, superando tus aportes directos.")
+    # Insight recuperado
+    st.info("💡 La zona **dorada** representa el dinero que trabaja para ti (Intereses). Con el tiempo, esta zona crece exponencialmente gracias al interés compuesto.")
 
 # TAB 3: Inflación
 with tab3:
@@ -441,7 +434,7 @@ with tab3:
     perdida_inflacion = res_target["saldo_nominal"] - res_target["saldo_real"]
     porcentaje_perdida = (perdida_inflacion / res_target["saldo_nominal"]) * 100 if res_target["saldo_nominal"] > 0 else 0
     
-    # Recuperando el panel de alerta de inflación
+    # Alerta recuperada
     st.markdown(f"""
     <div style="background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05)); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 20px; margin-top: 16px;">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
@@ -452,8 +445,7 @@ with tab3:
         </div>
         <div style="color: #cbd5e1; font-size: 0.95rem;">
             Pérdida estimada de poder adquisitivo: <strong style="color: #f87171;">₡{perdida_inflacion:,.0f}</strong> ({porcentaje_perdida:.1f}%)
-            <br><br>
-            <em style="font-size: 0.85rem; opacity: 0.8;">Esto significa que, aunque tengas el monto nominal, solo podrás comprar bienes equivalentes al valor de la línea verde.</em>
+            <br><em style="font-size: 0.85rem; opacity: 0.8;">La brecha entre ambas líneas es el "costo invisible" de la inflación.</em>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -468,16 +460,21 @@ with tab4:
         tabla_completa[f"{nombre} (Nominal)"] = [r["serie_nominal"][i*12] for i in range(plazo_anos + 1)]
         tabla_completa[f"{nombre} (Real)"] = [r["serie_real"][i*12] for i in range(plazo_anos + 1)]
     
-    st.dataframe(
-        tabla_completa.style.format({col: "₡ {:,.0f}" for col in tabla_completa.columns if col != "Año"}),
-        use_container_width=True,
-        height=400
-    )
+    # Manejo de errores en renderizado de estilos
+    try:
+        st.dataframe(
+            tabla_completa.style.format({col: "₡ {:,.0f}" for col in tabla_completa.columns if col != "Año"}),
+            use_container_width=True,
+            height=400
+        )
+    except Exception:
+        # Fallback a tabla simple si falla el estilo
+        st.dataframe(tabla_completa, use_container_width=True, height=400)
     
-    # Recuperando el texto explicativo de exportación
+    # Texto de exportación recuperado
     st.markdown("""
     <div style="background: rgba(30, 41, 59, 0.6); border-radius: 8px; padding: 12px; margin-top: 10px; font-size: 0.9rem; color: #cbd5e1;">
-        📥 <strong>Exportación:</strong> Descarga estos datos en CSV para abrirlos en Excel y realizar tus propios análisis detallados.
+        📥 <strong>Exportación:</strong> Descarga estos datos para usarlos en tus asesorías o análisis personalizados.
     </div>
     """, unsafe_allow_html=True)
     
