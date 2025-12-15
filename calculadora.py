@@ -214,24 +214,44 @@ def calcular_escenario_completo(tasa_bruta_pct, anos, aporte, inicial, comision_
     # Procesar abonos extraordinarios
     if not abonos_extra_df.empty:
         df_limpio = abonos_extra_df.dropna(subset=["Fecha", "Monto"]).copy()
+        
         for index, row in df_limpio.iterrows():
             try:
+                # Convertir fecha - manejar diferentes formatos
                 fecha_abono = pd.to_datetime(row["Fecha"]).date()
                 monto_abono = float(row["Monto"])
                 
-                if fecha_abono < start_date:
-                    abonos_ignorados.append(f"Fila {index+1}: Fecha {fecha_abono.strftime('%d/%m/%Y')} es anterior al inicio")
+                # Validar monto positivo
+                if monto_abono <= 0:
+                    abonos_ignorados.append(f"Fila {index+1}: Monto debe ser positivo")
                     continue
                 
+                # Validar que la fecha no sea muy antigua (permitir desde hace 1 año)
+                fecha_minima = start_date - timedelta(days=365)
+                if fecha_abono < fecha_minima:
+                    abonos_ignorados.append(f"Fila {index+1}: Fecha {fecha_abono.strftime('%d/%m/%Y')} es muy antigua")
+                    continue
+                
+                # Calcular diferencia en meses desde la fecha de inicio
                 diff_meses = (fecha_abono.year - start_date.year) * 12 + (fecha_abono.month - start_date.month)
                 
+                # Aceptar abonos desde el mes 0 hasta el último mes del plazo
                 if 0 <= diff_meses < meses:
                     abonos_map[diff_meses] = abonos_map.get(diff_meses, 0) + monto_abono
+                elif diff_meses < 0:
+                    # Fecha anterior al inicio pero dentro del año permitido
+                    abonos_ignorados.append(f"Fila {index+1}: Fecha {fecha_abono.strftime('%d/%m/%Y')} es anterior al inicio ({start_date.strftime('%d/%m/%Y')})")
                 else:
-                    abonos_ignorados.append(f"Fila {index+1}: Fecha fuera del plazo de {anos} años")
+                    # Fecha posterior al plazo
+                    fecha_limite = start_date + timedelta(days=365*anos)
+                    abonos_ignorados.append(f"Fila {index+1}: Fecha {fecha_abono.strftime('%d/%m/%Y')} supera el plazo (límite: {fecha_limite.strftime('%d/%m/%Y')})")
                     
+            except ValueError as e:
+                abonos_ignorados.append(f"Fila {index+1}: Formato de fecha inválido")
+            except TypeError as e:
+                abonos_ignorados.append(f"Fila {index+1}: Monto inválido")
             except Exception as e:
-                abonos_ignorados.append(f"Fila {index+1}: Error al procesar")
+                abonos_ignorados.append(f"Fila {index+1}: Error al procesar - {str(e)[:50]}")
                 continue
 
     # Cálculos de tasas
